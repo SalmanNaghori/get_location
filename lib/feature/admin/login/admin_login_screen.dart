@@ -8,21 +8,21 @@ import 'package:get_location/core/constant/app_image.dart';
 import 'package:get_location/core/constant/app_string.dart';
 import 'package:get_location/core/constant/color_const.dart';
 import 'package:get_location/core/storage/shared_pref.dart';
-import 'package:get_location/core/util/permission/location_permission.dart';
 import 'package:get_location/core/util/app_util.dart';
+import 'package:get_location/core/util/permission/location_permission.dart';
 import 'package:get_location/core/widget/appbar.dart';
+import 'package:get_location/feature/admin/screen/admin_home_screen.dart';
 import 'package:get_location/feature/auth/model/user_model.dart';
-import 'package:get_location/feature/auth/signup_screen.dart';
 import 'package:get_location/feature/user_screen/user_home_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class AdminLoginScreen extends StatefulWidget {
+  const AdminLoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<AdminLoginScreen> createState() => _AdminLoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _AdminLoginScreenState extends State<AdminLoginScreen> {
   // form key
   final _formKey = GlobalKey<FormState>();
 
@@ -173,27 +173,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 25,
                   ),
                   //SignUp button
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        const Text("Don't have an account? "),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const SignUpScreen()));
-                          },
-                          child: const Text(
-                            "SignUp",
-                            style: TextStyle(
-                                color: ConstColor.primaryColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15),
-                          ),
-                        )
-                      ]),
                 ],
               ),
             ),
@@ -214,7 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         User? user = _auth.currentUser;
         var snapshot = await FirebaseFirestore.instance
-            .collection("users")
+            .collection("admin")
             .doc(user?.email)
             .get();
         log("Fetched Data: ${snapshot.data()}");
@@ -223,7 +202,7 @@ class _LoginScreenState extends State<LoginScreen> {
         // Get current device id and save it to Firestore
 
         final userDoc =
-            FirebaseFirestore.instance.collection("users").doc(user?.email);
+            FirebaseFirestore.instance.collection("admin").doc(user?.email);
 
         if (snapshot.exists) {
           log("hellllllllloooooo snapshot.exists");
@@ -231,7 +210,9 @@ class _LoginScreenState extends State<LoginScreen> {
           // EasyLoading.dismiss();
           loggedInUser = UserModel.fromMap(snapshot.data()!);
 
-          userDoc.update({"fcmToken": SharedPrefUtils.getFcmToken()});
+          userDoc.update(
+            {"fcmToken": SharedPrefUtils.getFcmToken(), "uid": user?.uid},
+          );
         } else {
           EasyLoading.dismiss();
           // Handle the case where the document does not exist
@@ -283,7 +264,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> navigation() async {
     EasyLoading.dismiss();
     Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const UserHomeScreen()));
+        MaterialPageRoute(builder: (context) => const AdminHomeSCreen()));
     Future.delayed(const Duration(milliseconds: 200), () {
       AppUtils.appToast("Login Successful");
     });

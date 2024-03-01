@@ -9,10 +9,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_location/core/constant/app_string.dart';
 import 'package:get_location/core/constant/color_const.dart';
 import 'package:get_location/core/navigator/navigator.dart';
+import 'package:get_location/core/util/app_util.dart';
+import 'package:get_location/feature/admin/login/admin_login_screen.dart';
+import 'package:get_location/feature/admin/screen/admin_home_screen.dart';
 import 'package:get_location/feature/auth/login_screen.dart';
 import 'package:get_location/feature/dash_board/dash_board_cubit.dart';
-import 'package:get_location/feature/user_screen/home_screen.dart';
+import 'package:get_location/feature/user_screen/user_home_screen.dart';
 import 'package:logger/logger.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 class MyApp extends StatefulWidget {
@@ -24,6 +28,14 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Permission.notification.request();
+    AppUtils.instance.getFcmToken();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
@@ -93,7 +105,7 @@ class _MyAppState extends State<MyApp> {
   Widget getRootWidget() {
     log("User logged in==${FirebaseAuth.instance.currentUser != null}");
     return FirebaseAuth.instance.currentUser != null
-        ? const UserHomeScreen()
-        : const LoginScreen();
+        ? const AdminHomeSCreen()
+        : const AdminLoginScreen();
   }
 }

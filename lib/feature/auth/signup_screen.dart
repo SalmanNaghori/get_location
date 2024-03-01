@@ -12,7 +12,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get_location/core/constant/app_image.dart';
 import 'package:get_location/core/constant/app_string.dart';
-import 'package:get_location/core/extension/extensions.dart';
+import 'package:get_location/core/util/extension/extensions.dart';
 import 'package:get_location/core/navigator/navigator.dart';
 import 'package:get_location/core/util/app_util.dart';
 import 'package:get_location/core/widget/appbar.dart';
