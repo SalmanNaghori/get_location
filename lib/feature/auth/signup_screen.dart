@@ -274,7 +274,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       userModel.uid = user.uid;
       userModel.firstName = firstNameEditingController.text;
       userModel.secondName = secondNameEditingController.text;
-      userModel.image = imageUrl;
+      // userModel.image = imageUrl;
       // userModel.deviceId = await getDeviceId();
 
       // SharedPrefUtils.setUesrEmail(user.email.toString());

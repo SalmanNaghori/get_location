@@ -11,6 +11,7 @@ import 'package:get_location/core/storage/shared_pref.dart';
 import 'package:get_location/core/util/permission/location_permission.dart';
 import 'package:get_location/core/util/app_util.dart';
 import 'package:get_location/core/widget/appbar.dart';
+import 'package:get_location/feature/admin/model/admin_model.dart';
 import 'package:get_location/feature/auth/model/user_model.dart';
 import 'package:get_location/feature/auth/signup_screen.dart';
 import 'package:get_location/feature/user_screen/user_home_screen.dart';
@@ -30,6 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   UserModel loggedInUser = UserModel();
+  AdminModel adminModel = AdminModel();
   LocationService locationService = LocationService();
 
   // firebase
@@ -222,8 +224,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // Get current device id and save it to Firestore
 
-        final userDoc =
+        var userDoc =
             FirebaseFirestore.instance.collection("users").doc(user?.email);
+        var adminCollection =
+            await FirebaseFirestore.instance.collection("admin").get();
 
         if (snapshot.exists) {
           log("hellllllllloooooo snapshot.exists");
@@ -232,6 +236,16 @@ class _LoginScreenState extends State<LoginScreen> {
           loggedInUser = UserModel.fromMap(snapshot.data()!);
 
           userDoc.update({"fcmToken": SharedPrefUtils.getFcmToken()});
+
+          for (var adminDoc in adminCollection.docs) {
+            log("Admin data: ${adminDoc.data()}");
+            adminModel = AdminModel.fromMap(adminDoc.data());
+          }
+
+          log("Admin Data: ${adminModel.email ?? ""}");
+          SharedPrefUtils.setUserId(loggedInUser.email ?? "");
+          SharedPrefUtils.setAdminId(adminModel.email ?? "");
+          SharedPrefUtils.setUserModel(loggedInUser);
         } else {
           EasyLoading.dismiss();
           // Handle the case where the document does not exist

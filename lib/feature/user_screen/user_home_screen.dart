@@ -1,15 +1,18 @@
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get_location/core/constant/app_string.dart';
 import 'package:get_location/core/constant/color_const.dart';
+import 'package:get_location/core/storage/shared_pref.dart';
+import 'package:get_location/core/util/logger.dart';
 import 'package:get_location/core/widget/appbar.dart';
 import 'package:get_location/core/widget/my_button.dart';
+import 'package:get_location/feature/admin/cubit/location_dif_cubit.dart';
 import 'package:get_location/feature/auth/login_screen.dart';
 import 'package:get_location/feature/auth/model/user_model.dart';
 import 'package:get_location/feature/user_screen/cubit/get_user_cubit.dart';
@@ -25,16 +28,22 @@ class UserHomeScreen extends StatefulWidget {
 
 class _UserHomeScreenState extends State<UserHomeScreen> {
   FirebaseCubit firebaseCubit = FirebaseCubit();
-  LocationCubit location = LocationCubit();
+  LocationCubit locationCubit = LocationCubit(UserType.user);
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  LocationDiffCubit locationDiffCubit = LocationDiffCubit(
+    userId: SharedPrefUtils.getUserId(),
+    adminId: SharedPrefUtils.getAdminId(),
+  );
 
   @override
   void initState() {
     super.initState();
     // Fetch data when the screen is loaded
     firebaseCubit.fetchData();
-    location.startLocationService();
-    location.getCurrentLocation();
+
+    locationCubit.getCurrentLocation();
+
+    locationDiffCubit.startLocationUpdates();
   }
 
   @override
@@ -45,8 +54,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           value: firebaseCubit,
         ),
         BlocProvider.value(
-          value: location,
+          value: locationCubit,
         ),
+        BlocProvider.value(value: locationDiffCubit)
       ],
       child: Scaffold(
         backgroundColor: ConstColor.whiteColor,
@@ -113,7 +123,22 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     EasyLoading.show();
                     _logout();
                   },
-                )
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                BlocBuilder<LocationDiffCubit, DistanceState>(
+                  builder: (context, state) {
+                    addSubCollection();
+                    // Use the state to display UI elements or trigger actions
+                    if (state.distance <= 0.01) {
+                      return Text('Distance: <<<<<<<${state.distance}>>>>');
+                    } else {
+                      deleteSubCollection();
+                      return Text('Distance: ${state.distance}');
+                    }
+                  },
+                ),
               ],
             ),
           ),
@@ -130,7 +155,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         (Route<dynamic> route) => false,
       );
       // await SharedPrefUtils.setIsUserLoggedIn(false);
-
+      locationCubit.stopLocationService();
       await _auth.signOut();
     } catch (e) {
       EasyLoading.dismiss();
@@ -138,10 +163,48 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     }
   }
 
+  Future<void> addSubCollection() async {
+    try {
+      var subCollection = FirebaseFirestore.instance
+          .collection("admin")
+          .doc(SharedPrefUtils.getAdminId())
+          .collection("usersInRange")
+          .doc(SharedPrefUtils.getUserId());
+
+      await subCollection.set({
+        'email': SharedPrefUtils.getUserModel().email,
+        'firstName': SharedPrefUtils.getUserModel().firstName,
+        'secondName': SharedPrefUtils.getUserModel().secondName,
+      });
+
+      logger.w('Subcollection added successfully');
+    } catch (error) {
+      logger.e('Error adding subcollection $error');
+      // You can handle the error here, e.g., show a toast or log it to a crash reporting service
+    }
+  }
+
+  Future<void> deleteSubCollection() async {
+    try {
+      var subCollection = FirebaseFirestore.instance
+          .collection("admin")
+          .doc(SharedPrefUtils.getAdminId())
+          .collection("usersInRange")
+          .doc(SharedPrefUtils.getUserId());
+
+      await subCollection.delete();
+
+      logger.f('Subcollection deleted successfully');
+    } catch (error) {
+      logger.e('Error deleting subcollection $error');
+      // You can handle the error here, e.g., show a toast or log it to a crash reporting service
+    }
+  }
+
   Widget locationData(String data) {
     return Text(
       data,
-      style: TextStyle(
+      style: const TextStyle(
         fontWeight: FontWeight.bold,
         fontSize: 18,
       ),

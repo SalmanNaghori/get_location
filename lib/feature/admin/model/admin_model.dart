@@ -3,8 +3,16 @@ class AdminModel {
   String? uid;
   String? email;
   String? fcmToken;
+  String? latitude;
+  String? longitude;
 
-  AdminModel({this.uid, this.email, this.fcmToken});
+  AdminModel({
+    this.uid,
+    this.email,
+    this.fcmToken,
+    this.latitude,
+    this.longitude,
+  });
 
   // receiving data from server
   factory AdminModel.fromMap(Map<String, dynamic>? map) {
@@ -12,6 +20,8 @@ class AdminModel {
       uid: map?['uid'],
       email: map?['email'],
       fcmToken: map?['fcmToken'],
+      latitude: map?['latitude'],
+      longitude: map?['longitude'],
     );
   }
 
@@ -21,11 +31,13 @@ class AdminModel {
       'uid': uid,
       'email': email,
       'fcmToken': fcmToken,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 
   @override
   String toString() {
-    return 'UserModel{uid: $uid, email: $email, FcmToken: $fcmToken}';
+    return 'UserModel{uid: $uid, email: $email, FcmToken: $fcmToken,latitude: $latitude, longitude: $latitude}';
   }
 }

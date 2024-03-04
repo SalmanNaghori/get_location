@@ -4,8 +4,8 @@ class UserModel {
   String? email;
   String? firstName;
   String? secondName;
-  String? image;
-  String? deviceId;
+  // String? image;
+  // String? deviceId;
   String? fcmToken;
   String? latitude;
   String? longitude;
@@ -15,8 +15,8 @@ class UserModel {
     this.email,
     this.firstName,
     this.secondName,
-    this.image,
-    this.deviceId,
+    // this.image,
+    // this.deviceId,
     this.fcmToken,
     this.latitude,
     this.longitude,
@@ -29,8 +29,8 @@ class UserModel {
       email: map?['email'],
       firstName: map?['firstName'],
       secondName: map?['secondName'],
-      image: map?['image'],
-      deviceId: map?['deviceId'],
+      // image: map?['image'],
+      // deviceId: map?['deviceId'],
       fcmToken: map?['fcmToken'],
       latitude: map?['latitude'],
       longitude: map?['longitude'],
@@ -44,8 +44,8 @@ class UserModel {
       'email': email,
       'firstName': firstName,
       'secondName': secondName,
-      'image': image,
-      'deviceId': deviceId, // Remove the space before deviceId
+      // 'image': image,
+      // 'deviceId': deviceId, // Remove the space before deviceId
       'fcmToken': fcmToken,
       'latitude': latitude,
       'longitude': longitude,
@@ -54,6 +54,6 @@ class UserModel {
 
   @override
   String toString() {
-    return 'UserModel{uid: $uid, email: $email, firstName: $firstName, secondName: $secondName, image:$image ,deviceId: $deviceId, FcmToken: $fcmToken, latitude: $latitude, longitude: $latitude}';
+    return 'UserModel{uid: $uid, email: $email, firstName: $firstName, secondName: $secondName, fcmToken: $fcmToken, latitude: $latitude, longitude: $latitude}';
   }
 }

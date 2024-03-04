@@ -54,23 +54,25 @@ class UserListWidget extends StatelessWidget {
                               fontFamily: "chewy",
                               color: ConstColor.primaryColor),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            const Icon(
-                              CupertinoIcons.location_solid,
-                              color: ConstColor.primaryColor,
-                            ),
-                            Text(
-                              ': ${userList[index].latitude}, '
-                              ' ${userList[index].longitude}',
-                              style: const TextStyle(
-                                  fontSize: 20,
-                                  fontFamily: "chewy",
-                                  color: ConstColor.primaryColor),
-                            ),
-                          ],
-                        )
+                        userList[index].latitude == null
+                            ? const SizedBox()
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  const Icon(
+                                    CupertinoIcons.location_solid,
+                                    color: ConstColor.primaryColor,
+                                  ),
+                                  Text(
+                                    ': ${userList[index].latitude}, '
+                                    ' ${userList[index].longitude}',
+                                    style: const TextStyle(
+                                        fontSize: 20,
+                                        fontFamily: "chewy",
+                                        color: ConstColor.primaryColor),
+                                  ),
+                                ],
+                              )
                       ],
                     )
                   ],

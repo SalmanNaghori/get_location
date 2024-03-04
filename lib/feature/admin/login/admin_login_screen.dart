@@ -11,6 +11,7 @@ import 'package:get_location/core/storage/shared_pref.dart';
 import 'package:get_location/core/util/app_util.dart';
 import 'package:get_location/core/util/permission/location_permission.dart';
 import 'package:get_location/core/widget/appbar.dart';
+import 'package:get_location/feature/admin/model/admin_model.dart';
 import 'package:get_location/feature/admin/screen/admin_home_screen.dart';
 import 'package:get_location/feature/auth/model/user_model.dart';
 import 'package:get_location/feature/user_screen/user_home_screen.dart';
@@ -29,7 +30,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   // editing controller
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  UserModel loggedInUser = UserModel();
+  AdminModel loggedInAdmin = AdminModel();
   LocationService locationService = LocationService();
 
   // firebase
@@ -197,7 +198,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
             .doc(user?.email)
             .get();
         log("Fetched Data: ${snapshot.data()}");
-        loggedInUser = UserModel.fromMap(snapshot.data());
+        loggedInAdmin = AdminModel.fromMap(snapshot.data());
 
         // Get current device id and save it to Firestore
 
@@ -208,7 +209,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           log("hellllllllloooooo snapshot.exists");
           // Update the specific field (id in this case)
           // EasyLoading.dismiss();
-          loggedInUser = UserModel.fromMap(snapshot.data()!);
+          loggedInAdmin = AdminModel.fromMap(snapshot.data()!);
+          SharedPrefUtils.setAdminId(loggedInAdmin.email ?? "");
 
           userDoc.update(
             {"fcmToken": SharedPrefUtils.getFcmToken(), "uid": user?.uid},

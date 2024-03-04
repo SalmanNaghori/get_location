@@ -6,4 +6,6 @@ class ImageAsset {
   static const icViewUser = "assets/images/ic_view_user.png";
   static const icWelcomeAnimation = "assets/lottie/ic_welcome_animation.json";
   // static const icAppLogo = "assets/images/logo.png";
+  static const icNearMeView = "assets/images/ic_near_me_view.png";
+  static const icDataEmpty = "assets/images/ic_data_empty.png";
 }

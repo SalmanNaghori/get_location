@@ -36,4 +36,5 @@ class AppString {
 
   //Todo:Admin home screen
   static const viewUsers = "View Users";
+  static const whoIsNearMe = "Who is Near me?";
 }

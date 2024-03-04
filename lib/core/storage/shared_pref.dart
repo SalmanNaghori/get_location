@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../feature/auth/model/user_model.dart';
 
 class SharedPrefUtils {
   static Future<SharedPreferences> get _instance async =>
@@ -18,5 +22,42 @@ class SharedPrefUtils {
 
   static String getFcmToken() {
     return _prefsInstance?.getString("FcmToken") ?? "";
+  }
+
+  static Future<bool> setAdminId(String value) async {
+    var prefs = await _instance;
+    return prefs.setString("AdminId", value);
+  }
+
+  static String getAdminId() {
+    return _prefsInstance?.getString("AdminId") ?? "";
+  }
+
+  static Future<bool> setUserId(String value) async {
+    var prefs = await _instance;
+    return prefs.setString("UserId", value);
+  }
+
+  static String getUserId() {
+    return _prefsInstance?.getString("UserId") ?? "";
+  }
+
+  static Future<bool> setUserModel(UserModel value) async {
+    var prefs = await _instance;
+
+    // Convert the UserModel to a JSON string
+    String userJson = jsonEncode(value.toMap());
+
+    // Store the JSON string in SharedPreferences
+    return prefs.setString("UserModel", userJson);
+  }
+
+  static UserModel getUserModel() {
+    String userJson = _prefsInstance?.getString("UserModel") ?? "";
+
+    // If the stored JSON string is not empty, decode it back to a UserModel
+    return userJson.isNotEmpty
+        ? UserModel.fromMap(jsonDecode(userJson))
+        : UserModel();
   }
 }
