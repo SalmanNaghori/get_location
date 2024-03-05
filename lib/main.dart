@@ -6,6 +6,8 @@ import 'package:get_location/core/constant/color_const.dart';
 import 'package:get_location/core/storage/shared_pref.dart';
 import 'package:get_location/feature/get_location.dart';
 
+import 'feature/firebase_notification/notification_service.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -14,7 +16,7 @@ Future<void> main() async {
 
   await Firebase.initializeApp();
   SharedPrefUtils.init();
-
+  await NotificationsService().init();
   runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
     home: MyApp(),

@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -118,6 +117,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   height: 20,
                 ),
                 MyButton(
+                  height: 40,
+                  miniWidth: 100,
                   title: AppString.logOut,
                   onPressed: () async {
                     EasyLoading.show();
@@ -129,9 +130,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 ),
                 BlocBuilder<LocationDiffCubit, DistanceState>(
                   builder: (context, state) {
-                    addSubCollection();
                     // Use the state to display UI elements or trigger actions
                     if (state.distance <= 0.01) {
+                      addSubCollection();
                       return Text('Distance: <<<<<<<${state.distance}>>>>');
                     } else {
                       deleteSubCollection();
@@ -149,14 +150,19 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   Future<void> _logout() async {
     try {
-      EasyLoading.dismiss();
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-        (Route<dynamic> route) => false,
-      );
-      // await SharedPrefUtils.setIsUserLoggedIn(false);
       locationCubit.stopLocationService();
-      await _auth.signOut();
+
+      // Stop Firestore listener
+      locationDiffCubit.close();
+
+      Future.delayed(Duration(seconds: 2), () async {
+        await _auth.signOut();
+        EasyLoading.dismiss();
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (Route<dynamic> route) => false,
+        );
+      });
     } catch (e) {
       EasyLoading.dismiss();
       log('Error during logout: $e');
@@ -210,5 +216,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       ),
       textAlign: TextAlign.center,
     );
+  }
+
+  @override
+  void dispose() {
+    locationDiffCubit.close();
+    super.dispose();
   }
 }

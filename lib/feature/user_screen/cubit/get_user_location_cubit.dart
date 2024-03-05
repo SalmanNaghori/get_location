@@ -63,7 +63,7 @@ class LocationCubit extends Cubit<LocationState> {
 
   void stopLocationService() {
     BackgroundLocation.stopLocationService();
-    logger.e('Location service stopped');
+    logger.f('Location service stopped');
     emit(state.copyWith(isServiceRunning: false));
   }
 

@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_location/core/storage/shared_pref.dart';
 
@@ -15,7 +14,6 @@ class UserInRangeCubit extends Cubit<UserInRangeState> {
   UserInRangeCubit() : super(UserInRangeState([]));
   Future<void> fetchData() async {
     try {
-      final auth = FirebaseAuth.instance;
       List<UserModel> userList = [];
 
       await FirebaseFirestore.instance
