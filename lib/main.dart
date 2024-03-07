@@ -6,7 +6,7 @@ import 'package:get_location/core/constant/color_const.dart';
 import 'package:get_location/core/storage/shared_pref.dart';
 import 'package:get_location/feature/get_location.dart';
 
-import 'feature/firebase_notification/notification_service.dart';
+import 'core/firebase/notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

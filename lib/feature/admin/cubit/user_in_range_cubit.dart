@@ -16,7 +16,7 @@ class UserInRangeCubit extends Cubit<UserInRangeState> {
     try {
       List<UserModel> userList = [];
 
-      await FirebaseFirestore.instance
+      FirebaseFirestore.instance
           .collection("admin")
           .doc(SharedPrefUtils.getAdminId())
           .collection('usersInRange')
@@ -28,7 +28,7 @@ class UserInRangeCubit extends Cubit<UserInRangeState> {
         if (userList.isNotEmpty) {
           // Emit the list of users to the UI
           emit(UserInRangeState(userList));
-          logger.d('Admin data exists: $userList');
+          logger.d('User in range data exists: $userList');
         } else {
           // If no documents found, emit an empty list
           emit(UserInRangeState([]));

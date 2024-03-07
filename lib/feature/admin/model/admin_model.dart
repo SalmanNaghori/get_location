@@ -38,6 +38,6 @@ class AdminModel {
 
   @override
   String toString() {
-    return 'UserModel{uid: $uid, email: $email, FcmToken: $fcmToken,latitude: $latitude, longitude: $latitude}';
+    return 'AdminModel{uid: $uid, email: $email, FcmToken: $fcmToken,latitude: $latitude, longitude: $longitude}';
   }
 }

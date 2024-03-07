@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get_location/core/constant/app_string.dart';
 import 'package:get_location/core/constant/color_const.dart';
+import 'package:get_location/core/network/api_helper.dart';
 import 'package:get_location/core/storage/shared_pref.dart';
 import 'package:get_location/core/util/logger.dart';
 import 'package:get_location/core/widget/appbar.dart';
@@ -17,6 +18,8 @@ import 'package:get_location/feature/auth/model/user_model.dart';
 import 'package:get_location/feature/user_screen/cubit/get_user_cubit.dart';
 import 'package:get_location/feature/user_screen/cubit/get_user_location_cubit.dart';
 import 'package:get_location/feature/user_screen/widget/welcome_animation.dart';
+
+import '../admin/model/admin_model.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -29,6 +32,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   FirebaseCubit firebaseCubit = FirebaseCubit();
   LocationCubit locationCubit = LocationCubit(UserType.user);
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  AdminModel adminModel = AdminModel();
   LocationDiffCubit locationDiffCubit = LocationDiffCubit(
     userId: SharedPrefUtils.getUserId(),
     adminId: SharedPrefUtils.getAdminId(),
@@ -40,6 +44,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     // Fetch data when the screen is loaded
     firebaseCubit.fetchData();
 
+    locationCubit.startLocationService();
     locationCubit.getCurrentLocation();
 
     locationDiffCubit.startLocationUpdates();
@@ -128,18 +133,30 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 const SizedBox(
                   height: 20,
                 ),
-                BlocBuilder<LocationDiffCubit, DistanceState>(
-                  builder: (context, state) {
-                    // Use the state to display UI elements or trigger actions
-                    if (state.distance <= 0.01) {
+                BlocListener<LocationDiffCubit, DistanceState>(
+                  listener: (context, state) {
+                    // Use the new state to trigger actions
+                    state.distance.toString();
+
+                    // Perform actions based on the distanceString value
+                    if (state.distance == 0.0) {
+                      logger.e("state.distance=======${state.distance}");
+                    } else if (state.distance <= 0.01) {
                       addSubCollection();
-                      return Text('Distance: <<<<<<<${state.distance}>>>>');
                     } else {
                       deleteSubCollection();
-                      return Text('Distance: ${state.distance}');
                     }
+
+                    // Use distanceString as needed
+                    // For example, you can store it in a variable, pass it to a function, etc.
                   },
-                ),
+                  child: BlocBuilder<LocationDiffCubit, DistanceState>(
+                    builder: (context, state) {
+                      // Use the state to display UI elements
+                      return Text('Distance: ${state.distance.toString()}');
+                    },
+                  ),
+                )
               ],
             ),
           ),
@@ -182,6 +199,28 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         'firstName': SharedPrefUtils.getUserModel().firstName,
         'secondName': SharedPrefUtils.getUserModel().secondName,
       });
+
+      var adminCollection =
+          await FirebaseFirestore.instance.collection("admin").get();
+
+      for (var adminDoc in adminCollection.docs) {
+        try {
+          logger.d("Admin data Home screen: ${adminDoc.data()}");
+          adminModel = AdminModel.fromMap(adminDoc.data());
+          SharedPrefUtils.setFcmAdminToken(adminModel.fcmToken ?? "");
+          logger.f("FCMToken===========${SharedPrefUtils.getFcmAdminToken()}");
+          if (SharedPrefUtils.getFcmAdminToken().isNotEmpty) {
+            Future.delayed(const Duration(milliseconds: 500), () {
+              ApiHelper().sendNotification();
+            });
+          }
+        } catch (e) {
+          log("Error storing AdminId in SharedPreferences: $e");
+        }
+
+        // Break out of the loop after the first iteration
+        break;
+      }
 
       logger.w('Subcollection added successfully');
     } catch (error) {

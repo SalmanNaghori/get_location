@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:get_location/core/util/logger.dart';
 
 class NotificationsService {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -11,12 +12,13 @@ class NotificationsService {
     //Todo:forground
     FirebaseMessaging.onMessage.listen(
       (message) {
-        print("FirebaseMessaging.onMessage.listen");
+        logger.f("FirebaseMessaging.onMessage.listen");
         if (message.notification != null) {
-          print(message.notification!.title);
-          print(message.notification!.body);
-          print("message.data11 ${message.data}");
-          createanddisplaynotification(message);
+          logger.d(message.notification!.title);
+          logger.d(message.notification!.body);
+          logger.d("message.data11 ${message.data}");
+          initialize();
+          createAndDisplayNotification(message);
         }
       },
     );
@@ -24,12 +26,12 @@ class NotificationsService {
     //Todo:background notification
     FirebaseMessaging.onMessageOpenedApp.listen(
       (message) {
-        print("====>>>>FirebaseMessaging.onMessageOpenedApp.listen");
+        logger.f("====>>>>FirebaseMessaging.onMessageOpenedApp.listen");
         if (message.notification != null) {
           initialize();
-          print(message.notification!.title);
-          print(message.notification!.body);
-          print("message.data22 ${message.data['_id']}");
+          logger.d(message.notification!.title);
+          logger.d(message.notification!.body);
+          logger.d("message.data22 ${message.data['_id']}");
         }
       },
     );
@@ -62,26 +64,18 @@ class NotificationsService {
     _flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) async {
-        print("======>>>>message11111> ${response.payload.toString()}");
-        print("onSelectNotification");
+        logger.d("======>>>>message11111> ${response.payload.toString()}");
+        logger.d("onSelectNotification");
         if (response.payload!.isNotEmpty) {
           String id = response.payload.toString();
-          print("======>>>>Router Value1234 $id");
+          logger.d("======>>>>Router Value1234 $id");
 
           // Navigate to your screen using the retrieved id
-          print("push");
+          logger.d("push");
 
           if (id.isNotEmpty) {
-            print("push");
+            logger.d("push");
 
-            // Navigator.push(
-            //   GlobalVariable.appContext,
-            //   MaterialPageRoute(
-            //     builder: (context) => NavigateScreen(
-            //       title: id,
-            //     ),
-            //   ),
-            // );
             navigateToOtherScreen(id);
           }
         }
@@ -101,27 +95,46 @@ class NotificationsService {
   }
 
   // after initialize we create channel in createanddisplaynotification method
-  static void createanddisplaynotification(RemoteMessage message) async {
+  static Future<void> createAndDisplayNotification(
+      RemoteMessage message) async {
     try {
       final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      const NotificationDetails notificationDetails = NotificationDetails(
+
+      if (message.notification == null) {
+        // Handle the case where the notification is null
+        throw Exception("Notification is null in the received message");
+      }
+
+      NotificationDetails notificationDetails = const NotificationDetails(
         android: AndroidNotificationDetails(
-          "pushnotificationapp",
-          "pushnotificationappchannel",
-          importance: Importance.max,
+          "get_location_status",
+          "Get Notifications",
+          importance: Importance.high,
           priority: Priority.high,
+          playSound: true,
+          icon: "@mipmap/ic_launcher",
         ),
       );
 
-      await _flutterLocalNotificationsPlugin.show(
-        id,
-        message.notification!.title,
-        message.notification!.body,
-        notificationDetails,
-        // payload: message.data['_id'],
-      );
-    } on Exception catch (e) {
-      print("===========${e}");
+      try {
+        // Your existing code...
+        await _flutterLocalNotificationsPlugin.show(
+          id,
+          message.notification!.title ?? "Default Title",
+          message.notification!.body ?? "Default Body",
+          notificationDetails,
+        );
+      } catch (e, stackTrace) {
+        logger.e("Error during notification show: $e\n$stackTrace");
+        // Handle the error as needed
+      }
+    } catch (e, stackTrace) {
+      // Log the error and stack trace for debugging
+      logger.e("Error during notification creation: $e\n$stackTrace");
+
+      // Handle the error based on your requirements
+      // You can also rethrow the exception if you want to propagate it further
+      // throw e;
     }
   }
 
@@ -136,12 +149,12 @@ class NotificationsService {
       sound: true,
     );
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print("=====>>>>>>>User Granted permission");
+      logger.d("=====>>>>>>>User Granted permission");
     } else if (settings.authorizationStatus ==
         AuthorizationStatus.provisional) {
-      print("====>>>>>User Granted provisional permission");
+      logger.w("====>>>>>User Granted provisional permission");
     } else {
-      print(">>>>>>=======>>>>User denied permission");
+      logger.e(">>>>>>=======>>>>User denied permission");
     }
   }
 

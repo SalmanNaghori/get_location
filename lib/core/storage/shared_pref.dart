@@ -20,8 +20,17 @@ class SharedPrefUtils {
     return prefs.setString("FcmToken", value);
   }
 
+  static Future<bool> setFcmAdminToken(String value) async {
+    var prefs = await _instance;
+    return prefs.setString("FcmAdminToken", value);
+  }
+
   static String getFcmToken() {
     return _prefsInstance?.getString("FcmToken") ?? "";
+  }
+
+  static String getFcmAdminToken() {
+    return _prefsInstance?.getString("FcmAdminToken") ?? "";
   }
 
   static Future<bool> setAdminId(String value) async {

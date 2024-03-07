@@ -54,7 +54,7 @@ class LocationCubit extends Cubit<LocationState> {
       icon: '@mipmap/ic_launcher',
     );
 
-    await BackgroundLocation.startLocationService(distanceFilter: 20);
+    await BackgroundLocation.startLocationService(distanceFilter: 10);
 
     logger.d('Location service started');
 
@@ -81,7 +81,6 @@ class LocationCubit extends Cubit<LocationState> {
       final existingData = await userDoc.get();
       if (existingData.exists) {
         logger.i('User/Admin have data');
-        startLocationService();
 
         BackgroundLocation.getLocationUpdates((location) {
           emit(LocationState(

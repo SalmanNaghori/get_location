@@ -55,6 +55,10 @@ dependencies:
 
   firebase_auth: ^4.17.6
   flutter_local_notifications: ^16.3.3
+  flutter_native_splash: ^2.3.10
+  flutter_launcher_icons: ^0.13.1
+  http: ^1.2.0
+  dio: ^5.4.1
 
 dev_dependencies:
   flutter_test:

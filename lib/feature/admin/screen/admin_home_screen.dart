@@ -6,6 +6,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get_location/core/constant/app_image.dart';
 import 'package:get_location/core/constant/app_string.dart';
 import 'package:get_location/core/constant/color_const.dart';
+import 'package:get_location/core/firebase/notification_service.dart';
 import 'package:get_location/core/util/logger.dart';
 import 'package:get_location/core/widget/appbar.dart';
 import 'package:get_location/feature/admin/cubit/user_in_range_cubit.dart';
@@ -32,7 +33,9 @@ class _AdminHomeSCreenState extends State<AdminHomeSCreen> {
     // TODO: implement initState
     super.initState();
     locationCubit.getCurrentLocation();
+    locationCubit.startLocationService();
     userInRangeCubit.fetchData();
+    NotificationsService().requestNotificationsPermission();
   }
 
   @override

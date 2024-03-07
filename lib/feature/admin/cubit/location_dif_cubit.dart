@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:math' show cos, sqrt, asin;
 
+import 'package:background_location/background_location.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_location/core/util/app_util.dart';
 import 'package:get_location/core/util/logger.dart';
-import 'package:location/location.dart';
+
+import '../../../core/app_life_cycle/app_life_cycle.dart';
 
 // State to represent the distance result
 class DistanceState {
@@ -13,6 +17,7 @@ class DistanceState {
 }
 
 class LocationDiffCubit extends Cubit<DistanceState> {
+  final AppLifecycleObserver appLifecycleObserver = AppLifecycleObserver();
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final String userId; // Replace with the actual user ID
   final String adminId; // Replace with the actual admin ID
@@ -24,12 +29,11 @@ class LocationDiffCubit extends Cubit<DistanceState> {
   LocationDiffCubit({required this.userId, required this.adminId})
       : super(DistanceState(0.0)) {
     // Start listening to location updates when the cubit is created
-    startLocationUpdates();
+    // startLocationUpdates();
     isCubitActive = true;
     // startLocationListener();
   }
 
-  final Location location = Location();
   bool isCubitActive = false;
   // Function to calculate distance
   double calculateDistance(
@@ -83,7 +87,7 @@ class LocationDiffCubit extends Cubit<DistanceState> {
           logger.w('Calculated Distance: $distance meters');
 
           // Emit the new state with the calculated distance
-
+          logger.w('Calculating distance and updating state');
           emit(DistanceState(distance));
         }
       }
@@ -96,6 +100,7 @@ class LocationDiffCubit extends Cubit<DistanceState> {
   // Function to start listening to location updates
   void startLocationUpdates() {
     try {
+      logger.d('Stream triggered. User ID: $userId');
       locationSubscription = firestore
           .collection('users')
           .doc(userId)
@@ -106,24 +111,27 @@ class LocationDiffCubit extends Cubit<DistanceState> {
           double newUserLat = double.parse(userSnapshot['latitude']);
           double newUserLng = double.parse(userSnapshot['longitude']);
 
-          // Retrieve admin's location from Firestore
-          DocumentSnapshot adminSnapshot =
-              await firestore.collection('admin').doc(adminId).get();
+          // Check if the values have changed
+          if (newUserLat != previousUserLat || newUserLng != previousUserLng) {
+            // Update the previous values
+            previousUserLat = newUserLat;
+            previousUserLng = newUserLng;
 
-          if (adminSnapshot.exists) {
-            double adminLat = double.parse(adminSnapshot['latitude']);
-            double adminLng = double.parse(adminSnapshot['longitude']);
+            // Retrieve admin's location from Firestore
+            DocumentSnapshot adminSnapshot =
+                await firestore.collection('admin').doc(adminId).get();
 
-            // Check if the values have changed
-            if (newUserLat != previousUserLat ||
-                newUserLng != previousUserLng) {
-              // Update the previous values
-              previousUserLat = newUserLat;
-              previousUserLng = newUserLng;
+            logger.e("=========$adminId");
+
+            if (adminSnapshot.exists) {
+              double adminLat = double.parse(adminSnapshot['latitude']);
+              double adminLng = double.parse(adminSnapshot['longitude']);
 
               // Calculate distance
               double distance =
                   calculateDistance(newUserLat, newUserLng, adminLat, adminLng);
+
+              log("============${distance.toString()}");
 
               if (distance <= 10.0 && !isInRange) {
                 // Call calculateDistanceAndUpdateState only if within 10 meters
@@ -134,12 +142,13 @@ class LocationDiffCubit extends Cubit<DistanceState> {
                 isInRange = false;
               }
             } else {
-              // Values haven't changed
-              logger.d('Location values have not changed');
+              // Admin document does not exist
+              logger.d('Admin document does not exist');
             }
           } else {
-            // Admin document does not exist
-            logger.d('Admin document does not exist');
+            AppUtils.appToast("Location values have not changed");
+            // Values haven't changed
+            logger.d('Location values have not changed');
           }
         } else {
           // User document does not exist
@@ -152,25 +161,14 @@ class LocationDiffCubit extends Cubit<DistanceState> {
     }
   }
 
-  // Function to start listening to location updates
-  // void startLocationListener() {
-  //   try {
-  //     log("<<<<<<<<<<<<<Starting location>");
-  //     locationSubscription =
-  //         location.onLocationChanged.listen((LocationData currentLocation) {
-  //       // Trigger distance calculation when the user's location changes
-  //       calculateDistanceAndUpdateState();
-  //     });
-  //   } catch (e, stacktrace) {
-  //     logger.e('Error listening to location updates: $e, $stacktrace');
-  //   }
-  // }
-
   @override
   Future<void> close() {
     try {
       isCubitActive = false;
       locationSubscription.cancel();
+      appLifecycleObserver.dispose();
+      BackgroundLocation.stopLocationService();
+      logger.f('Location service stopped');
       logger.f('Listener service stopped');
     } catch (e, stacktrace) {
       logger.e('Error calculating Close: $e, $stacktrace');

@@ -54,6 +54,6 @@ class UserModel {
 
   @override
   String toString() {
-    return 'UserModel{uid: $uid, email: $email, firstName: $firstName, secondName: $secondName, fcmToken: $fcmToken, latitude: $latitude, longitude: $latitude}';
+    return 'UserModel{uid: $uid, email: $email, firstName: $firstName, secondName: $secondName, fcmToken: $fcmToken, latitude: $latitude, longitude: $longitude}';
   }
 }
