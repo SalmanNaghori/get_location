@@ -2,20 +2,27 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_location/core/constant/app_image.dart';
 import 'package:get_location/core/constant/app_string.dart';
 import 'package:get_location/core/constant/color_const.dart';
-import 'package:get_location/core/permission/location_permission.dart';
+import 'package:get_location/core/storage/shared_pref.dart';
+import 'package:get_location/core/util/permission/location_permission.dart';
 import 'package:get_location/core/util/app_util.dart';
 import 'package:get_location/core/widget/appbar.dart';
+import 'package:get_location/core/widget/my_button.dart';
+import 'package:get_location/feature/admin/model/admin_model.dart';
 import 'package:get_location/feature/auth/model/user_model.dart';
 import 'package:get_location/feature/auth/signup_screen.dart';
-import 'package:get_location/feature/user_screen/home_screen.dart';
+import 'package:get_location/feature/user_screen/user_home_screen.dart';
+
+import '../../core/util/logger.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -29,6 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   UserModel loggedInUser = UserModel();
+  AdminModel adminModel = AdminModel();
   LocationService locationService = LocationService();
 
   // firebase
@@ -36,6 +44,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // string for displaying the error Message
   String? errorMessage;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if (kDebugMode) {
+      emailController.text = "tonny@gmail.com";
+      passwordController.text = "123456";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,31 +124,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ));
 
-    final loginButton = Material(
-      elevation: 5,
-      borderRadius: BorderRadius.circular(30),
-      color: ConstColor.primaryColor,
-      child: MaterialButton(
-        padding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
-        minWidth: MediaQuery.of(context).size.width,
-        onPressed: () async {
-          if (await locationService.getLocation()) {
-            signIn(emailController.text, passwordController.text);
-          } else {
-            AppUtils.appToast(AppString.locationPermission);
-          }
-
-          // FocusScope.of(context).requestFocus(FocusNode());
-        },
-        child: const Text(
-          AppString.login,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
-
     return Scaffold(
       appBar: CustomAppBar.blankAppBar(
         title: "",
@@ -161,7 +154,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 25),
                   passwordField,
                   const SizedBox(height: 35),
-                  loginButton,
+                  MyButton(
+                    title: AppString.login,
+                    onPressed: () async {
+                      signIn(emailController.text, passwordController.text);
+                    },
+                  ),
                   const SizedBox(height: 15),
                   const SizedBox(
                     height: 10,
@@ -210,15 +208,7 @@ class _LoginScreenState extends State<LoginScreen> {
         FocusScope.of(context).unfocus();
         await _auth.signInWithEmailAndPassword(
             email: email, password: password);
-
-        User? user = _auth.currentUser;
-        var snapshot = await FirebaseFirestore.instance
-            .collection("users")
-            .doc(user?.email)
-            .get();
-        log("Fetched Data: ${snapshot.data()}");
-        loggedInUser = UserModel.fromMap(snapshot.data());
-
+        await updateDataAndStoreFirebase();
         navigation();
         log("User:$email=========LoggedIn Successfully====");
       } on FirebaseAuthException catch (error) {
@@ -258,6 +248,55 @@ class _LoginScreenState extends State<LoginScreen> {
       Future.delayed(const Duration(seconds: 1), () {
         EasyLoading.dismiss();
       });
+    }
+  }
+
+  //Todo:User Data Update and store to firebase
+  Future<void> updateDataAndStoreFirebase() async {
+    User? user = _auth.currentUser;
+    var snapshot = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(user?.email)
+        .get();
+    log("Fetched Data: ${snapshot.data()}");
+    loggedInUser = UserModel.fromMap(snapshot.data());
+
+    // Get current device id and save it to Firestore
+
+    var userDoc =
+        FirebaseFirestore.instance.collection("users").doc(user?.email);
+    var adminCollection =
+        await FirebaseFirestore.instance.collection("admin").get();
+
+    if (snapshot.exists) {
+      log("hellllllllloooooo snapshot.exists");
+      // Update the specific field (id in this case)
+      // EasyLoading.dismiss();
+      loggedInUser = UserModel.fromMap(snapshot.data()!);
+
+      userDoc.update({"fcmToken": SharedPrefUtils.getFcmToken()});
+      for (var adminDoc in adminCollection.docs) {
+        adminModel = AdminModel.fromMap(adminDoc.data());
+        log("Admin data in for loop: $adminModel");
+
+        try {
+          SharedPrefUtils.setAdminId(adminModel.email ?? "");
+          log("Admin Data store in shared: ${SharedPrefUtils.getAdminId()}");
+        } catch (e) {
+          log("Error storing AdminId in SharedPreferences: $e");
+        }
+
+        // Break out of the loop after the first iteration
+        break;
+      }
+
+      SharedPrefUtils.setUserId(loggedInUser.email ?? "");
+      // SharedPrefUtils.setAdminId(adminModel.email ?? "");
+      SharedPrefUtils.setUserModel(loggedInUser);
+    } else {
+      EasyLoading.dismiss();
+      // Handle the case where the document does not exist
+      log("User document does not exist");
     }
   }
 

@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get_location/core/constant/color_const.dart';
+import 'package:get_location/core/storage/shared_pref.dart';
 import 'package:get_location/feature/get_location.dart';
+
+import 'core/firebase/notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,7 +15,8 @@ Future<void> main() async {
   configLoading();
 
   await Firebase.initializeApp();
-
+  SharedPrefUtils.init();
+  await NotificationsService().init();
   runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
     home: MyApp(),

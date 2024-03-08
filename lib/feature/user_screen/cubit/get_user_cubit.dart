@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_location/feature/auth/model/user_model.dart';
-import 'package:get_location/feature/get_location.dart';
+
+import '../../../core/util/logger.dart';
 
 class FirebaseCubit extends Cubit<List<UserModel>> {
   FirebaseCubit() : super([]);
@@ -20,12 +21,13 @@ class FirebaseCubit extends Cubit<List<UserModel>> {
       if (snapshot.exists) {
         UserModel userModel = UserModel.fromMap(snapshot.data());
         emit([userModel]);
-        MyApp.logger.i('Data exists: $userModel');
+        logger.d('Data exists: $userModel');
       } else {
-        MyApp.logger.w('Document does not exist');
+        logger.w('Document does not exist');
+        emit([]);
       }
     } catch (e) {
-      MyApp.logger.e('Error fetching data: $e');
+      logger.e('Error fetching data: $e');
     }
   }
 }

@@ -33,4 +33,8 @@ class AppString {
 
   //Todo:Permissions
   static const locationPermission = "Please Give the location permission";
+
+  //Todo:Admin home screen
+  static const viewUsers = "View Users";
+  static const whoIsNearMe = "Who is Near me?";
 }

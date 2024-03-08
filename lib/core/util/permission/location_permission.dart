@@ -1,3 +1,4 @@
+import 'package:get_location/core/storage/shared_pref.dart';
 import 'package:location/location.dart';
 
 class LocationService {
@@ -8,6 +9,8 @@ class LocationService {
     if (!serviceEnabled) {
       serviceEnabled = await location.requestService();
       if (!serviceEnabled) {
+        SharedPrefUtils.setFirstPermissionLocation(false);
+
         return false;
       }
     }
@@ -16,6 +19,7 @@ class LocationService {
     if (permissionGranted == PermissionStatus.denied) {
       permissionGranted = await location.requestPermission();
       if (permissionGranted != PermissionStatus.granted) {
+        SharedPrefUtils.setFirstPermissionLocation(false);
         return false;
       }
     }
@@ -26,6 +30,7 @@ class LocationService {
     // Example: handleLocation(locationData);
 
     // Return true indicating permission was granted and location data was obtained
+    SharedPrefUtils.setFirstPermissionLocation(true);
     return true;
   }
 }

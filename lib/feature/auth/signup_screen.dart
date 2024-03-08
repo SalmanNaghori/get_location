@@ -4,17 +4,14 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get_location/core/constant/app_image.dart';
 import 'package:get_location/core/constant/app_string.dart';
-import 'package:get_location/core/extension/extensions.dart';
 import 'package:get_location/core/navigator/navigator.dart';
 import 'package:get_location/core/util/app_util.dart';
+import 'package:get_location/core/util/extension/extensions.dart';
 import 'package:get_location/core/widget/appbar.dart';
 import 'package:get_location/core/widget/custome_textfield.dart';
 import 'package:get_location/core/widget/my_button.dart';
@@ -274,7 +271,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       userModel.uid = user.uid;
       userModel.firstName = firstNameEditingController.text;
       userModel.secondName = secondNameEditingController.text;
-      userModel.image = imageUrl;
+      // userModel.image = imageUrl;
       // userModel.deviceId = await getDeviceId();
 
       // SharedPrefUtils.setUesrEmail(user.email.toString());
