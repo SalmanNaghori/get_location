@@ -29,7 +29,7 @@ class LocationDiffCubit extends Cubit<DistanceState> {
   LocationDiffCubit({required this.userId, required this.adminId})
       : super(DistanceState(0.0)) {
     // Start listening to location updates when the cubit is created
-    // startLocationUpdates();
+    startLocationUpdates();
     isCubitActive = true;
     // startLocationListener();
   }
@@ -100,11 +100,21 @@ class LocationDiffCubit extends Cubit<DistanceState> {
   // Function to start listening to location updates
   void startLocationUpdates() {
     try {
+      // Log that the stream is triggered with the user ID
       logger.d('Stream triggered. User ID: $userId');
+
+      // Set up a Firestore listener on the 'users' collection for the specific user ID
       locationSubscription = firestore
           .collection('users')
           .doc(userId)
           .snapshots()
+          // Use the 'where' clause to filter changes based on the 'latitude' field
+          .where((DocumentSnapshot userSnapshot) {
+        // Check if the 'latitude' field has changed
+        AppUtils.appToast("latitude=====${userSnapshot['latitude']}");
+        return userSnapshot['latitude'] != previousUserLat.toString();
+      })
+          // Listen for changes in the user document
           .listen((DocumentSnapshot userSnapshot) async {
         if (userSnapshot.exists) {
           // Extract latitude and longitude from the user document
@@ -121,24 +131,31 @@ class LocationDiffCubit extends Cubit<DistanceState> {
             DocumentSnapshot adminSnapshot =
                 await firestore.collection('admin').doc(adminId).get();
 
+            // Log the admin ID
             logger.e("=========$adminId");
 
             if (adminSnapshot.exists) {
+              // Extract latitude and longitude from the admin document
               double adminLat = double.parse(adminSnapshot['latitude']);
               double adminLng = double.parse(adminSnapshot['longitude']);
 
-              // Calculate distance
+              // Calculate distance between user and admin
               double distance =
                   calculateDistance(newUserLat, newUserLng, adminLat, adminLng);
 
+              // Log the distance
+              AppUtils.appToast("=====${distance.toString()}");
               log("============${distance.toString()}");
 
               if (distance <= 10.0 && !isInRange) {
                 // Call calculateDistanceAndUpdateState only if within 10 meters
+                AppUtils.appToast("===&& !isInRange==${!isInRange}");
                 calculateDistanceAndUpdateState();
                 isInRange = true; // Set the flag to true
-              } else if (distance > 10.0 && isInRange) {
+              } else if (distance > 0.01 && isInRange) {
                 // User moved out of the 10-meter range, reset the flag
+                calculateDistanceAndUpdateState();
+                AppUtils.appToast("==&& isInRange===$isInRange");
                 isInRange = false;
               }
             } else {
@@ -146,8 +163,8 @@ class LocationDiffCubit extends Cubit<DistanceState> {
               logger.d('Admin document does not exist');
             }
           } else {
-            AppUtils.appToast("Location values have not changed");
             // Values haven't changed
+            AppUtils.appToast("Location values have not changed");
             logger.d('Location values have not changed');
           }
         } else {

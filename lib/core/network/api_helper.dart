@@ -5,14 +5,14 @@ import 'package:http/http.dart' as http;
 import 'package:get_location/core/util/logger.dart';
 
 class ApiHelper {
-  Future<void> sendNotification() async {
+  Future<void> sendNotification(String title) async {
     try {
       final notificationData = {
         "to": SharedPrefUtils.getFcmAdminToken(),
         "notification": {
           "body":
               "${SharedPrefUtils.getUserModel().firstName} ${SharedPrefUtils.getUserModel().secondName}",
-          "title": "User in Range",
+          "title": title,
           "android_channel_id": "get_location_status",
           "sound": true
         },

@@ -105,7 +105,7 @@ class _MyAppState extends State<MyApp> {
   Widget getRootWidget() {
     log("User logged in==${FirebaseAuth.instance.currentUser != null}");
     return FirebaseAuth.instance.currentUser != null
-        ? const UserHomeScreen()
-        : const LoginScreen();
+        ? const AdminHomeSCreen()
+        : const AdminLoginScreen();
   }
 }

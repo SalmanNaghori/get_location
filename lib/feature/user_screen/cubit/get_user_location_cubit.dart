@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_location/core/util/logger.dart';
 
-enum UserType { user, admin }
+import '../../../core/util/enum.dart';
 
 class LocationState {
   final String latitude;

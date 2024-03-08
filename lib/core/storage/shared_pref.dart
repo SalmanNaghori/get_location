@@ -69,4 +69,13 @@ class SharedPrefUtils {
         ? UserModel.fromMap(jsonDecode(userJson))
         : UserModel();
   }
+
+  static bool getFirstPermissionLocation() {
+    return _prefsInstance?.getBool("FirstPermissionLocation") ?? false;
+  }
+
+  static Future<bool> setFirstPermissionLocation(bool value) async {
+    var prefs = await _instance;
+    return prefs.setBool("FirstPermissionLocation", value);
+  }
 }

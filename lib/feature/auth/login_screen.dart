@@ -13,6 +13,7 @@ import 'package:get_location/core/storage/shared_pref.dart';
 import 'package:get_location/core/util/permission/location_permission.dart';
 import 'package:get_location/core/util/app_util.dart';
 import 'package:get_location/core/widget/appbar.dart';
+import 'package:get_location/core/widget/my_button.dart';
 import 'package:get_location/feature/admin/model/admin_model.dart';
 import 'package:get_location/feature/auth/model/user_model.dart';
 import 'package:get_location/feature/auth/signup_screen.dart';
@@ -123,31 +124,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ));
 
-    final loginButton = Material(
-      elevation: 5,
-      borderRadius: BorderRadius.circular(30),
-      color: ConstColor.primaryColor,
-      child: MaterialButton(
-        padding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
-        minWidth: MediaQuery.of(context).size.width,
-        onPressed: () async {
-          if (await locationService.getLocation()) {
-            signIn(emailController.text, passwordController.text);
-          } else {
-            AppUtils.appToast(AppString.locationPermission);
-          }
-
-          // FocusScope.of(context).requestFocus(FocusNode());
-        },
-        child: const Text(
-          AppString.login,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
-
     return Scaffold(
       appBar: CustomAppBar.blankAppBar(
         title: "",
@@ -178,7 +154,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 25),
                   passwordField,
                   const SizedBox(height: 35),
-                  loginButton,
+                  MyButton(
+                    title: AppString.login,
+                    onPressed: () async {
+                      signIn(emailController.text, passwordController.text);
+                    },
+                  ),
                   const SizedBox(height: 15),
                   const SizedBox(
                     height: 10,

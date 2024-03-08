@@ -16,6 +16,9 @@ import 'package:get_location/feature/admin/screen/who_is_near_me.dart';
 import 'package:get_location/feature/admin/screen/widget/custom_card_widget.dart';
 import 'package:get_location/feature/user_screen/cubit/get_user_location_cubit.dart';
 
+import '../../../core/util/enum.dart';
+import '../../../core/util/permission/location_per.dart';
+
 class AdminHomeSCreen extends StatefulWidget {
   const AdminHomeSCreen({super.key});
 
@@ -26,7 +29,7 @@ class AdminHomeSCreen extends StatefulWidget {
 class _AdminHomeSCreenState extends State<AdminHomeSCreen> {
   LocationCubit locationCubit = LocationCubit(UserType.admin);
   UserInRangeCubit userInRangeCubit = UserInRangeCubit();
-
+  LocationPermissionCubit locationPermissionCubit = LocationPermissionCubit();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   @override
   void initState() {
@@ -45,7 +48,8 @@ class _AdminHomeSCreenState extends State<AdminHomeSCreen> {
         BlocProvider.value(
           value: locationCubit,
         ),
-        BlocProvider.value(value: userInRangeCubit)
+        BlocProvider.value(value: userInRangeCubit),
+        BlocProvider.value(value: locationPermissionCubit),
       ],
       child: Scaffold(
         backgroundColor: ConstColor.whiteColor,
@@ -75,6 +79,33 @@ class _AdminHomeSCreenState extends State<AdminHomeSCreen> {
                   imgae: ImageAsset.icNearMeView,
                   color: ConstColor.primaryColor,
                   name: AppString.whoIsNearMe,
+                ),
+                BlocBuilder<LocationPermissionCubit, LocationPermissionState>(
+                  builder: (context, state) {
+                    if (state is LocationPermissionGranted) {
+                      // Handle permission granted
+                      locationCubit.startLocationService();
+                      locationCubit.getCurrentLocation();
+                      return const Center(
+                          child: Text('Location Permission Granted'));
+                    } else if (state is LocationPermissionDenied) {
+                      // Handle permission denied
+                      return const Center(
+                          child: Text('Location Permission Denied'));
+                    } else if (state is LocationError) {
+                      // Handle location error
+                      return const Center(child: Text('Location Error'));
+                    } else if (state is LocationServiceEnabled) {
+                      // Handle location error
+                      return const Center(child: Text('Location is enabled'));
+                    } else if (state is LocationServiceDisabled) {
+                      // Handle location error
+                      return const Center(child: Text('Location is disabled'));
+                    } else {
+                      // Handle other states as needed
+                      return const Center(child: Text('Unknown State'));
+                    }
+                  },
                 ),
               ],
             ),

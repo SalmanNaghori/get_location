@@ -19,6 +19,8 @@ import 'package:get_location/feature/user_screen/cubit/get_user_cubit.dart';
 import 'package:get_location/feature/user_screen/cubit/get_user_location_cubit.dart';
 import 'package:get_location/feature/user_screen/widget/welcome_animation.dart';
 
+import '../../core/util/enum.dart';
+import '../../core/util/permission/location_per.dart';
 import '../admin/model/admin_model.dart';
 
 class UserHomeScreen extends StatefulWidget {
@@ -33,10 +35,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   LocationCubit locationCubit = LocationCubit(UserType.user);
   final FirebaseAuth _auth = FirebaseAuth.instance;
   AdminModel adminModel = AdminModel();
+  LocationPermissionCubit locationPermissionCubit = LocationPermissionCubit();
   LocationDiffCubit locationDiffCubit = LocationDiffCubit(
     userId: SharedPrefUtils.getUserId(),
     adminId: SharedPrefUtils.getAdminId(),
   );
+
+  final String distance = "";
 
   @override
   void initState() {
@@ -44,10 +49,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     // Fetch data when the screen is loaded
     firebaseCubit.fetchData();
 
-    locationCubit.startLocationService();
-    locationCubit.getCurrentLocation();
-
-    locationDiffCubit.startLocationUpdates();
+    locationPermissionCubit.getLocation();
+    // locationDiffCubit.startLocationUpdates();
   }
 
   @override
@@ -60,7 +63,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         BlocProvider.value(
           value: locationCubit,
         ),
-        BlocProvider.value(value: locationDiffCubit)
+        BlocProvider.value(value: locationDiffCubit),
+        BlocProvider.value(value: locationPermissionCubit),
       ],
       child: Scaffold(
         backgroundColor: ConstColor.whiteColor,
@@ -156,7 +160,34 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       return Text('Distance: ${state.distance.toString()}');
                     },
                   ),
-                )
+                ),
+                BlocBuilder<LocationPermissionCubit, LocationPermissionState>(
+                  builder: (context, state) {
+                    if (state is LocationPermissionGranted) {
+                      // Handle permission granted
+                      locationCubit.startLocationService();
+                      locationCubit.getCurrentLocation();
+                      return const Center(
+                          child: Text('Location Permission Granted'));
+                    } else if (state is LocationPermissionDenied) {
+                      // Handle permission denied
+                      return const Center(
+                          child: Text('Location Permission Denied'));
+                    } else if (state is LocationError) {
+                      // Handle location error
+                      return const Center(child: Text('Location Error'));
+                    } else if (state is LocationServiceEnabled) {
+                      // Handle location error
+                      return const Center(child: Text('Location is enabled'));
+                    } else if (state is LocationServiceDisabled) {
+                      // Handle location error
+                      return const Center(child: Text('Location is disabled'));
+                    } else {
+                      // Handle other states as needed
+                      return const Center(child: Text('Unknown State'));
+                    }
+                  },
+                ),
               ],
             ),
           ),
@@ -171,8 +202,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
       // Stop Firestore listener
       locationDiffCubit.close();
-
-      Future.delayed(Duration(seconds: 2), () async {
+      SharedPrefUtils.setFirstPermissionLocation(false);
+      Future.delayed(const Duration(seconds: 2), () async {
         await _auth.signOut();
         EasyLoading.dismiss();
         Navigator.of(context).pushAndRemoveUntil(
@@ -211,7 +242,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           logger.f("FCMToken===========${SharedPrefUtils.getFcmAdminToken()}");
           if (SharedPrefUtils.getFcmAdminToken().isNotEmpty) {
             Future.delayed(const Duration(milliseconds: 500), () {
-              ApiHelper().sendNotification();
+              ApiHelper().sendNotification("User In range");
             });
           }
         } catch (e) {
@@ -238,6 +269,28 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           .doc(SharedPrefUtils.getUserId());
 
       await subCollection.delete();
+
+      var adminCollection =
+          await FirebaseFirestore.instance.collection("admin").get();
+
+      for (var adminDoc in adminCollection.docs) {
+        try {
+          logger.d("Admin data Home screen: ${adminDoc.data()}");
+          adminModel = AdminModel.fromMap(adminDoc.data());
+          SharedPrefUtils.setFcmAdminToken(adminModel.fcmToken ?? "");
+          logger.f("FCMToken===========${SharedPrefUtils.getFcmAdminToken()}");
+          if (SharedPrefUtils.getFcmAdminToken().isNotEmpty) {
+            Future.delayed(const Duration(milliseconds: 500), () {
+              ApiHelper().sendNotification("User out of range");
+            });
+          }
+        } catch (e) {
+          log("Error storing AdminId in SharedPreferences: $e");
+        }
+
+        // Break out of the loop after the first iteration
+        break;
+      }
 
       logger.f('Subcollection deleted successfully');
     } catch (error) {
