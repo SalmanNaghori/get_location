@@ -27,7 +27,7 @@ class MyTextField extends StatelessWidget {
   final bool enable;
 
   const MyTextField(
-      {Key? key,
+      {super.key,
       this.height,
       this.suffixIcon,
       this.title,
@@ -48,8 +48,7 @@ class MyTextField extends StatelessWidget {
       this.inputFormatters,
       required this.keyBoardType,
       this.onSaved,
-      this.maxLine})
-      : super(key: key);
+      this.maxLine});
 
   @override
   Widget build(BuildContext context) {

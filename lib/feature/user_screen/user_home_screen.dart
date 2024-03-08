@@ -113,11 +113,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        locationData('Latitude: ' + state.latitude),
-                        locationData('Longitude: ' + state.longitude),
-                        locationData('Time: ' + state.time),
-                        locationData('IsServiceRunning: ' +
-                            state.isServiceRunning.toString()),
+                        locationData('Latitude: ${state.latitude}'),
+                        locationData('Longitude: ${state.longitude}'),
+                        locationData('Time: ${state.time}'),
+                        locationData(
+                            'IsServiceRunning: ${state.isServiceRunning}'),
                       ],
                     );
                   },
@@ -206,10 +206,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       Future.delayed(const Duration(seconds: 2), () async {
         await _auth.signOut();
         EasyLoading.dismiss();
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-          (Route<dynamic> route) => false,
-        );
+        navigation();
       });
     } catch (e) {
       EasyLoading.dismiss();
@@ -308,6 +305,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       ),
       textAlign: TextAlign.center,
     );
+  }
+
+  navigation() {
+    Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        (route) => false);
   }
 
   @override

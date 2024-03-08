@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_location/core/util/logger.dart';
 
@@ -11,8 +10,6 @@ class GetUsersListCubit extends Cubit<List<UserModel>> {
   Future<void> fetchData() async {
     try {
       // Fetch data from Firebase
-      final _auth = FirebaseAuth.instance;
-      User? user = _auth.currentUser;
 
       // Retrieve all documents from the "users" collection
       var querySnapshot =

@@ -10,14 +10,14 @@ class CustomCardWidget extends StatelessWidget {
   final Color color;
 
   const CustomCardWidget({
-    Key? key,
+    super.key,
     required this.onTap,
     required this.imgae,
     required this.height,
     required this.width,
     required this.name,
     required this.color,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

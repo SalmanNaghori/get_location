@@ -13,8 +13,6 @@ import 'package:get_location/core/util/permission/location_permission.dart';
 import 'package:get_location/core/widget/appbar.dart';
 import 'package:get_location/feature/admin/model/admin_model.dart';
 import 'package:get_location/feature/admin/screen/admin_home_screen.dart';
-import 'package:get_location/feature/auth/model/user_model.dart';
-import 'package:get_location/feature/user_screen/user_home_screen.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});

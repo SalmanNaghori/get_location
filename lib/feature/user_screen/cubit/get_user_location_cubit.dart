@@ -69,8 +69,8 @@ class LocationCubit extends Cubit<LocationState> {
 
   void getCurrentLocation() async {
     try {
-      final _auth = FirebaseAuth.instance;
-      User? user = _auth.currentUser;
+      final auth = FirebaseAuth.instance;
+      User? user = auth.currentUser;
 
       // Firebase
       final userDoc = FirebaseFirestore.instance

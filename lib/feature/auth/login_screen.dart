@@ -5,21 +5,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_location/core/constant/app_image.dart';
 import 'package:get_location/core/constant/app_string.dart';
 import 'package:get_location/core/constant/color_const.dart';
 import 'package:get_location/core/storage/shared_pref.dart';
-import 'package:get_location/core/util/permission/location_permission.dart';
 import 'package:get_location/core/util/app_util.dart';
+import 'package:get_location/core/util/permission/location_permission.dart';
 import 'package:get_location/core/widget/appbar.dart';
 import 'package:get_location/core/widget/my_button.dart';
 import 'package:get_location/feature/admin/model/admin_model.dart';
 import 'package:get_location/feature/auth/model/user_model.dart';
 import 'package:get_location/feature/auth/signup_screen.dart';
 import 'package:get_location/feature/user_screen/user_home_screen.dart';
-
-import '../../core/util/logger.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

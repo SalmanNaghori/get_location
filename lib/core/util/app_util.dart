@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get_location/core/storage/shared_pref.dart';
@@ -41,8 +42,10 @@ class AppUtils {
     FirebaseMessaging.instance.getToken().then((token) async {
       await SharedPrefUtils.setFcmToken(token!);
       timer?.cancel();
-      logger.w("Firebase token ~~~~~~~> ${token}");
-      print("Firebase token ~~~~~~~> ${token}");
+      logger.w("Firebase token ~~~~~~~> $token");
+      if (kDebugMode) {
+        print("Firebase token ~~~~~~~> $token");
+      }
     });
 
     // StartupService.saveAppVersion();

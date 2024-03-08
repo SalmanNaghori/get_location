@@ -10,8 +10,8 @@ class FirebaseCubit extends Cubit<List<UserModel>> {
 
   Future<void> fetchData() async {
     try {
-      final _auth = FirebaseAuth.instance;
-      User? user = _auth.currentUser;
+      final auth = FirebaseAuth.instance;
+      User? user = auth.currentUser;
 
       var snapshot = await FirebaseFirestore.instance
           .collection("users")

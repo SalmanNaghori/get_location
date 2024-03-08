@@ -24,7 +24,6 @@ class LocationService {
       }
     }
 
-    LocationData locationData = await location.getLocation();
     // You can do something with the locationData here
     // For example, you might want to store it in a variable or call another function.
     // Example: handleLocation(locationData);

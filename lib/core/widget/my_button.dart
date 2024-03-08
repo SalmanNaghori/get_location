@@ -15,7 +15,7 @@ class MyButton extends StatelessWidget {
   final Color? buttonColor;
 
   const MyButton({
-    Key? key,
+    super.key,
     this.miniWidth,
     this.height,
     this.textStyle,
@@ -26,7 +26,7 @@ class MyButton extends StatelessWidget {
     this.radius,
     required this.onPressed,
     this.buttonColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
