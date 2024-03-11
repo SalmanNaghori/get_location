@@ -2,6 +2,7 @@ import 'package:background_location/background_location.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_location/core/storage/shared_pref.dart';
 import 'package:get_location/core/util/logger.dart';
 
 import '../../../core/util/enum.dart';
@@ -67,39 +68,86 @@ class LocationCubit extends Cubit<LocationState> {
     emit(state.copyWith(isServiceRunning: false));
   }
 
+  void _updateLocationInFirestore(
+    String userId,
+    double latitude,
+    double longitude,
+    int time,
+  ) async {
+    try {
+      await FirebaseFirestore.instance.collection("users").doc(userId).update({
+        "adminLatitude": latitude.toString(),
+        "adminLongitude": longitude.toString(),
+        "time": DateTime.fromMillisecondsSinceEpoch(time).toString(),
+      });
+      await FirebaseFirestore.instance
+          .collection("admin")
+          .doc(SharedPrefUtils.getAdminId())
+          .update({
+        "latitude": latitude.toString(),
+        "longitude": longitude.toString(),
+        "time": DateTime.fromMillisecondsSinceEpoch(time).toString(),
+      });
+      logger.i('Location updated for user: $userId');
+    } catch (e, stacktrace) {
+      logger.e('Error updating location: $e, Stacktrace: $stacktrace');
+    }
+  }
+
+  void _handleLocationUpdate(Location location) {
+    emit(LocationState(
+      latitude: location.latitude.toString(),
+      longitude: location.longitude.toString(),
+      time: DateTime.fromMillisecondsSinceEpoch(location.time!.toInt())
+          .toString(),
+      isServiceRunning: state.isServiceRunning,
+    ));
+  }
+
   void getCurrentLocation() async {
     try {
       final auth = FirebaseAuth.instance;
       User? user = auth.currentUser;
 
-      // Firebase
-      final userDoc = FirebaseFirestore.instance
-          .collection(userType == UserType.user ? "users" : "admin")
-          .doc(user?.email);
+      if (user != null) {
+        final userId = user.email;
 
-      // Check if the user/admin has existing data
-      final existingData = await userDoc.get();
-      if (existingData.exists) {
-        logger.i('User/Admin have data');
+        BackgroundLocation.getLocationUpdates((location) async {
+          _handleLocationUpdate(location);
 
-        BackgroundLocation.getLocationUpdates((location) {
-          emit(LocationState(
-            latitude: location.latitude.toString(),
-            longitude: location.longitude.toString(),
-            time: DateTime.fromMillisecondsSinceEpoch(location.time!.toInt())
-                .toString(),
-            isServiceRunning: state.isServiceRunning,
-          ));
-          // Update the location in Firestore
-          userDoc.update({
-            "latitude": location.latitude.toString(),
-            "longitude": location.longitude.toString(),
-            "time": DateTime.fromMillisecondsSinceEpoch(location.time!.toInt())
-                .toString(),
-          });
+          if (userType == UserType.admin) {
+            // Update admin's location in Firestore
+            _updateLocationInFirestore(
+              userId!,
+              location.latitude!,
+              location.longitude!,
+              location.time!.toInt(),
+            );
+
+            // Iterate through all user documents and update their locations
+            final allUsers =
+                await FirebaseFirestore.instance.collection("users").get();
+            for (var userDocData in allUsers.docs) {
+              if (userDocData.id != userId) {
+                _handleLocationUpdate(location);
+                _updateLocationInFirestore(
+                  userDocData.id,
+                  location.latitude!,
+                  location.longitude!,
+                  location.time!.toInt(),
+                );
+              }
+            }
+          } else {
+            // Update user's location in Firestore
+            _updateLocationInFirestore(
+              userId!,
+              location.latitude!,
+              location.longitude!,
+              location.time!.toInt(),
+            );
+          }
         });
-      } else {
-        logger.e("user/admin Data not Exists $existingData");
       }
     } catch (e, stacktrace) {
       logger.e('Error getting current location: $e, Stacktrace: $stacktrace');

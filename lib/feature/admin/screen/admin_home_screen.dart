@@ -35,8 +35,8 @@ class _AdminHomeSCreenState extends State<AdminHomeSCreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    locationCubit.getCurrentLocation();
     locationCubit.startLocationService();
+    locationCubit.getCurrentLocation();
     userInRangeCubit.fetchData();
     NotificationsService().requestNotificationsPermission();
   }
@@ -48,66 +48,94 @@ class _AdminHomeSCreenState extends State<AdminHomeSCreen> {
         BlocProvider.value(
           value: locationCubit,
         ),
-        BlocProvider.value(value: userInRangeCubit),
-        BlocProvider.value(value: locationPermissionCubit),
+        BlocProvider.value(
+          value: userInRangeCubit,
+        ),
+        BlocProvider.value(
+          value: locationPermissionCubit,
+        ),
       ],
       child: Scaffold(
         backgroundColor: ConstColor.whiteColor,
         appBar: CustomAppBar.blankAppBar(title: "Welcome Admin"),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                CustomCardWidget(
-                  height: 200,
-                  width: 300,
-                  onTap: () {
-                    navigation(const ViewUserScreen());
-                  },
-                  imgae: ImageAsset.icViewUser,
-                  color: ConstColor.primaryColor,
-                  name: AppString.viewUsers,
-                ),
-                CustomCardWidget(
-                  height: 200,
-                  width: 300,
-                  onTap: () {
-                    navigation(const WhoIsNearMe());
-                  },
-                  imgae: ImageAsset.icNearMeView,
-                  color: ConstColor.primaryColor,
-                  name: AppString.whoIsNearMe,
-                ),
-                BlocBuilder<LocationPermissionCubit, LocationPermissionState>(
-                  builder: (context, state) {
-                    if (state is LocationPermissionGranted) {
-                      // Handle permission granted
-                      locationCubit.startLocationService();
-                      locationCubit.getCurrentLocation();
-                      return const Center(
-                          child: Text('Location Permission Granted'));
-                    } else if (state is LocationPermissionDenied) {
-                      // Handle permission denied
-                      return const Center(
-                          child: Text('Location Permission Denied'));
-                    } else if (state is LocationError) {
-                      // Handle location error
-                      return const Center(child: Text('Location Error'));
-                    } else if (state is LocationServiceEnabled) {
-                      // Handle location error
-                      return const Center(child: Text('Location is enabled'));
-                    } else if (state is LocationServiceDisabled) {
-                      // Handle location error
-                      return const Center(child: Text('Location is disabled'));
-                    } else {
-                      // Handle other states as needed
-                      return const Center(child: Text('Unknown State'));
-                    }
-                  },
-                ),
-              ],
+        body: SingleChildScrollView(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  BlocBuilder<LocationCubit, LocationState>(
+                    builder: (context, state) {
+                      logger.e(state.latitude);
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          locationData('Latitude: ${state.latitude}'),
+                          locationData('Longitude: ${state.longitude}'),
+                          locationData('Time: ${state.time}'),
+                          locationData(
+                              'IsServiceRunning: ${state.isServiceRunning}'),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  CustomCardWidget(
+                    height: 200,
+                    width: 300,
+                    onTap: () {
+                      navigation(const ViewUserScreen());
+                    },
+                    imgae: ImageAsset.icViewUser,
+                    color: ConstColor.primaryColor,
+                    name: AppString.viewUsers,
+                  ),
+                  CustomCardWidget(
+                    height: 200,
+                    width: 300,
+                    onTap: () {
+                      navigation(const WhoIsNearMe());
+                    },
+                    imgae: ImageAsset.icNearMeView,
+                    color: ConstColor.primaryColor,
+                    name: AppString.whoIsNearMe,
+                  ),
+                  BlocBuilder<LocationPermissionCubit, LocationPermissionState>(
+                    builder: (context, state) {
+                      if (state is LocationPermissionGranted) {
+                        // Handle permission granted
+                        locationCubit.startLocationService();
+                        locationCubit.getCurrentLocation();
+                        return const Center(
+                            child: Text('Location Permission Granted'));
+                      } else if (state is LocationPermissionDenied) {
+                        // Handle permission denied
+                        return const Center(
+                            child: Text('Location Permission Denied'));
+                      } else if (state is LocationError) {
+                        // Handle location error
+                        return const Center(child: Text('Location Error'));
+                      } else if (state is LocationServiceEnabled) {
+                        // Handle location error
+                        return const Center(child: Text('Location is enabled'));
+                      } else if (state is LocationServiceDisabled) {
+                        // Handle location error
+                        return const Center(
+                            child: Text('Location is disabled'));
+                      } else {
+                        // Handle other states as needed
+                        return const Center(child: Text('Unknown State'));
+                      }
+                    },
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -121,6 +149,12 @@ class _AdminHomeSCreenState extends State<AdminHomeSCreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    locationCubit.close();
+    super.dispose();
   }
 
   Future<void> _logout() async {
@@ -137,6 +171,17 @@ class _AdminHomeSCreenState extends State<AdminHomeSCreen> {
       EasyLoading.dismiss();
       logger.e('Error during logout: $e');
     }
+  }
+
+  Widget locationData(String data) {
+    return Text(
+      data,
+      style: const TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 18,
+      ),
+      textAlign: TextAlign.center,
+    );
   }
 
   Future<void> navigation(Widget widgetName) async {

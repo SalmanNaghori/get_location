@@ -145,9 +145,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     // Perform actions based on the distanceString value
                     if (state.distance == 0.0) {
                       logger.e("state.distance=======${state.distance}");
-                    } else if (state.distance <= 0.01) {
+                    } else if (state.distance <= 10.0) {
+                      logger.e("state.distance==10.0=====${state.distance}");
                       addSubCollection();
-                    } else {
+                    } else if (state.distance >= 0.01) {
+                      logger.e("state.distance===0.01)====${state.distance}");
                       deleteSubCollection();
                     }
 

@@ -286,7 +286,12 @@ class _LoginScreenState extends State<LoginScreen> {
         // Break out of the loop after the first iteration
         break;
       }
-
+      userDoc.update(
+        {
+          'adminLatitude': "",
+          'adminLongitude': "",
+        },
+      );
       SharedPrefUtils.setUserId(loggedInUser.email ?? "");
       // SharedPrefUtils.setAdminId(adminModel.email ?? "");
       SharedPrefUtils.setUserModel(loggedInUser);

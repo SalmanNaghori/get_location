@@ -9,17 +9,21 @@ class UserModel {
   String? fcmToken;
   String? latitude;
   String? longitude;
+  String? adminLatitude;
+  String? adminLongitude;
 
   UserModel({
+    // this.image,
+    // this.deviceId,
     this.uid,
     this.email,
     this.firstName,
     this.secondName,
-    // this.image,
-    // this.deviceId,
     this.fcmToken,
     this.latitude,
     this.longitude,
+    this.adminLatitude,
+    this.adminLongitude,
   });
 
   // receiving data from server
@@ -34,6 +38,8 @@ class UserModel {
       fcmToken: map?['fcmToken'],
       latitude: map?['latitude'],
       longitude: map?['longitude'],
+      adminLatitude: map?['adminLatitude'],
+      adminLongitude: map?['adminLongitude'],
     );
   }
 
@@ -49,11 +55,13 @@ class UserModel {
       'fcmToken': fcmToken,
       'latitude': latitude,
       'longitude': longitude,
+      'adminLatitude': adminLatitude,
+      'adminLongitude': adminLongitude,
     };
   }
 
   @override
   String toString() {
-    return 'UserModel{uid: $uid, email: $email, firstName: $firstName, secondName: $secondName, fcmToken: $fcmToken, latitude: $latitude, longitude: $longitude}';
+    return 'UserModel{uid: $uid, email: $email, firstName: $firstName, secondName: $secondName, fcmToken: $fcmToken, latitude: $latitude, longitude: $longitude, adminLatitude: $adminLatitude, adminLongitude: $adminLongitude,}';
   }
 }

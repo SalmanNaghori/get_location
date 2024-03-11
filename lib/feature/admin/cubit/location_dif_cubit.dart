@@ -25,6 +25,8 @@ class LocationDiffCubit extends Cubit<DistanceState> {
   late StreamSubscription<DocumentSnapshot> locationSubscription;
   double previousUserLat = 0.0; // Initial value
   double previousUserLng = 0.0; // Initial value
+  double previousAdminLat = 0.0; // Initial value
+  double previousAdminLng = 0.0; // Initial value
   bool isInRange = false; // Flag to track if the user is in range
   LocationDiffCubit({required this.userId, required this.adminId})
       : super(DistanceState(0.0)) {
@@ -112,7 +114,9 @@ class LocationDiffCubit extends Cubit<DistanceState> {
           .where((DocumentSnapshot userSnapshot) {
         // Check if the 'latitude' field has changed
         AppUtils.appToast("latitude=====${userSnapshot['latitude']}");
-        return userSnapshot['latitude'] != previousUserLat.toString();
+        AppUtils.appToast("adminLatitude=====${userSnapshot['adminLatitude']}");
+        return userSnapshot['latitude'] != previousUserLat.toString() ||
+            userSnapshot['adminLatitude'] != previousAdminLat.toString();
       })
           // Listen for changes in the user document
           .listen((DocumentSnapshot userSnapshot) async {
@@ -120,12 +124,19 @@ class LocationDiffCubit extends Cubit<DistanceState> {
           // Extract latitude and longitude from the user document
           double newUserLat = double.parse(userSnapshot['latitude']);
           double newUserLng = double.parse(userSnapshot['longitude']);
+          double newAdminLat = double.parse(userSnapshot['adminLatitude']);
+          double newAdminLng = double.parse(userSnapshot['adminLongitude']);
 
           // Check if the values have changed
-          if (newUserLat != previousUserLat || newUserLng != previousUserLng) {
+          if (newUserLat != previousUserLat ||
+              newUserLng != previousUserLng ||
+              newAdminLat != previousAdminLat ||
+              newAdminLng != previousAdminLng) {
             // Update the previous values
             previousUserLat = newUserLat;
             previousUserLng = newUserLng;
+            previousAdminLat = newAdminLat;
+            previousAdminLng = newAdminLng;
 
             // Retrieve admin's location from Firestore
             DocumentSnapshot adminSnapshot =
@@ -152,7 +163,7 @@ class LocationDiffCubit extends Cubit<DistanceState> {
                 AppUtils.appToast("===&& !isInRange==${!isInRange}");
                 calculateDistanceAndUpdateState();
                 isInRange = true; // Set the flag to true
-              } else if (distance > 0.01 && isInRange) {
+              } else if (distance > 0.1 && isInRange) {
                 // User moved out of the 10-meter range, reset the flag
                 calculateDistanceAndUpdateState();
                 AppUtils.appToast("==&& isInRange===$isInRange");

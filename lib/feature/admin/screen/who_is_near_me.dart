@@ -30,10 +30,15 @@ class _WhoIsNearMeState extends State<WhoIsNearMe> {
       value: userInRangeCubit,
       child: Scaffold(
         backgroundColor: ConstColor.whiteColor,
-        appBar: CustomAppBar.blankAppBar(title: AppString.whoIsNearMe),
+        appBar: CustomAppBar.backButton(
+            title: AppString.whoIsNearMe, context: context),
         body: BlocBuilder<UserInRangeCubit, UserInRangeState>(
           builder: (context, state) {
-            if (state.users.isNotEmpty) {
+            if (state.users.isEmpty) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (state.users.isNotEmpty) {
               return UserListWidget(
                 userList: state.users,
               );
